@@ -37,18 +37,15 @@ class Puzzle():
                 self.__Grid.append(C)
             self.__AllowedPatterns = []
             self.__AllowedSymbols = []
-            ##############################################################
-            patterns_info = [
-                ("Q", "QQ**Q**QQ", random.randint(1, 3)),
-                ("X", "X*X*X*X*X", random.randint(1, 3)),
-                ("T", "TTT**T**T", random.randint(1, 3))
-            ]
-            for symbol, pattern_str, count in patterns_info:
-                pattern = Pattern(symbol, pattern_str, count)
-                print(symbol, count)  # Pass the count here
-                self.__AllowedPatterns.append(pattern)
-                self.__AllowedSymbols.append(symbol)
-            ##############################################################
+            QPattern = Pattern("Q", "QQ**Q**QQ")
+            self.__AllowedPatterns.append(QPattern)
+            self.__AllowedSymbols.append("Q")
+            XPattern = Pattern("X", "X*X*X*X*X")
+            self.__AllowedPatterns.append(XPattern)
+            self.__AllowedSymbols.append("X")
+            TPattern = Pattern("T", "TTT**T**T")
+            self.__AllowedPatterns.append(TPattern)
+            self.__AllowedSymbols.append("T")
 
     def __LoadPuzzle(self, Filename):
         try:
@@ -82,7 +79,13 @@ class Puzzle():
         Finished = False
         while not Finished:
             self.DisplayPuzzle()
-            print("Current score: " + str(self.__Score))
+            print("Symbols left : " + str(self.__SymbolsLeft))#############################
+            print("Current score: " + str(self.__Score)) 
+            remove = input("Would you like to remove a symbol? ").lower()
+            if remove == "yes":
+                remove = True
+            else:
+                remove = False
             Row = -1
             Valid = False
             while not Valid:
@@ -99,20 +102,33 @@ class Puzzle():
                     Valid = True
                 except:
                     pass
-            Symbol = self.__GetSymbolFromUser()
-            self.__SymbolsLeft -= 1
-            CurrentCell = self.__GetCell(Row, Column)
-            if CurrentCell.CheckSymbolAllowed(Symbol):
-                CurrentCell.ChangeSymbolInCell(Symbol)
-                AmountToAddToScore = self.CheckforMatchWithPattern(Row, Column)
-                if AmountToAddToScore > 0:
-                    self.__Score += AmountToAddToScore
-            if self.__SymbolsLeft == 0:
-                Finished = True
+            if remove:
+                self.RemoveCell(Row, Column)###############################
+            else:
+                Symbol = self.__GetSymbolFromUser()
+                self.__SymbolsLeft -= 1
+                CurrentCell = self.__GetCell(Row, Column)
+                if CurrentCell.CheckSymbolAllowed(Symbol):
+                    CurrentCell.ChangeSymbolInCell(Symbol)
+                    AmountToAddToScore = self.CheckforMatchWithPattern(Row, Column)
+                    if AmountToAddToScore > 0:
+                        self.__Score += AmountToAddToScore
+                if self.__SymbolsLeft == 0:
+                    Finished = True
         print()
         self.DisplayPuzzle()
         print()
         return self.__Score
+    ##############################################################
+    def RemoveCell(self, row, column):
+        currentcell = self.__GetCell(row, column)
+        if not isinstance(currentcell, BlockedCell):
+            currentcell.ChangeSymbolInCell("")
+            self.__SymbolsLeft += 1
+            print("Symbol removed successfully")
+        else:
+            print("Symbol was not removed successfully")
+    ############################################################## 
 
     def __GetCell(self, Row, Column):
         Index = (self.__GridSize - Row) * self.__GridSize + Column - 1
@@ -181,32 +197,23 @@ class Puzzle():
                 print(self.__CreateHorizontalLine())
 
 class Pattern():
-    def __init__(self, SymbolToUse, PatternString, PatternCount = 0):
-        #################################################################
+    def __init__(self, SymbolToUse, PatternString):
         self.__Symbol = SymbolToUse
         self.__PatternSequence = PatternString
-        self.PatternCount = PatternCount # Stores Limits for each pattern       
 
     def MatchesPattern(self, PatternString, SymbolPlaced):
-        if self.PatternCount <= 0:
-            print(f"Limit for pattern {self.__Symbol}: {self.PatternCount}")
-            return False
-            
         if SymbolPlaced != self.__Symbol:
             return False
-        
         for Count in range(0, len(self.__PatternSequence)):
             try:
                 if self.__PatternSequence[Count] == self.__Symbol and PatternString[Count] != self.__Symbol:
                     return False
             except Exception as ex:
                 print(f"EXCEPTION in MatchesPattern: {ex}")
-        self.PatternCount -= 1
         return True
 
     def GetPatternSequence(self):
       return self.__PatternSequence
-    #####################################################################
 
 class Cell():
     def __init__(self):

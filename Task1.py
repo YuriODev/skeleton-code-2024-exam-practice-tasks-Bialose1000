@@ -51,9 +51,11 @@ class Puzzle():
             TPattern = Pattern("T", "TTT**T**T")
             self.__AllowedPatterns.append(TPattern)
             self.__AllowedSymbols.append("T")
+            ######################################################
             CPattern = Pattern("C", "CCC*CCCC*")
             self.__AllowedPatterns.append(CPattern)
             self.__AllowedSymbols.append("C")
+            ######################################################
 
     def __LoadPuzzle(self, Filename):
         try:

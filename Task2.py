@@ -1,8 +1,3 @@
-#Skeleton Program code for the AQA A Level Paper 1 Summer 2024 examination
-#this code should be used in conjunction with the Preliminary Material
-#written by the AQA Programmer Team
-#developed in the Python 3.9.4 programming environment
-
 import random
 import os
 
@@ -14,7 +9,7 @@ def Main():
         if len(Filename) > 0:
             MyPuzzle = Puzzle(Filename + ".txt")
         else:
-            MyPuzzle = Puzzle(8, int(8 * 8 * 0.6)) #allows you to fill 60% of thegrid before the puzzle finishes
+            MyPuzzle = Puzzle(8, int(8 * 8 * 0.6))
         Score = MyPuzzle.AttemptPuzzle()
         print("Puzzle finished. Your score was: " + str(Score))
         Again = input("Do another puzzle? ").lower()
@@ -127,26 +122,35 @@ class Puzzle():
         for StartRow in range(Row + 2, Row - 1, -1):
             for StartColumn in range(Column - 2, Column + 1):
                 try:
-                    ## Edit Started
-                    PatternList = []
-                    PatternString.append(self.__GetCell(StartRow, StartColumn))
-                    PatternString.append(self.__GetCell(StartRow, StartColumn + 2))
-                    PatternString.append(self.__GetCell(StartRow - 1, StartColumn + 2))
-                    PatternString.append(self.__GetCell(StartRow - 2, StartColumn + 2))
-                    PatternString.append(self.__GetCell(StartRow - 2, StartColumn + 1))
-                    PatternString.append(self.__GetCell(StartRow - 2, StartColumn))
-                    PatternString.append(self.__GetCell(StartRow - 1, StartColumn + 2))
-                    PatternString.append(self.__GetCell(StartRow - 1, StartColumn + 1))
+                    ###################################################
+                    cells = []
+                    cells.append(self.__GetCell(StartRow, StartColumn))
+                    cells.append(self.__GetCell(StartRow, StartColumn + 1))
+                    cells.append(self.__GetCell(StartRow, StartColumn + 2))
+                    cells.append(self.__GetCell(StartRow - 1, StartColumn + 2))
+                    cells.append(self.__GetCell(StartRow - 2, StartColumn + 2))
+                    cells.append(self.__GetCell(StartRow - 2, StartColumn + 1))
+                    cells.append(self.__GetCell(StartRow - 2, StartColumn))
+                    cells.append(self.__GetCell(StartRow - 1, StartColumn))
+                    cells.append(self.__GetCell(StartRow - 1, StartColumn + 1))
+                    ########################################################
                     PatternString = ""
-                    for C in patternList:
-                        Patternstring += C.GetSymbol()
+                    PatternString += self.__GetCell(StartRow, StartColumn).GetSymbol()
+                    PatternString += self.__GetCell(StartRow, StartColumn + 1).GetSymbol()
+                    PatternString += self.__GetCell(StartRow, StartColumn + 2).GetSymbol()
+                    PatternString += self.__GetCell(StartRow - 1, StartColumn + 2).GetSymbol()
+                    PatternString += self.__GetCell(StartRow - 2, StartColumn + 2).GetSymbol()
+                    PatternString += self.__GetCell(StartRow - 2, StartColumn + 1).GetSymbol()
+                    PatternString += self.__GetCell(StartRow - 2, StartColumn).GetSymbol()
+                    PatternString += self.__GetCell(StartRow - 1, StartColumn).GetSymbol()
+                    PatternString += self.__GetCell(StartRow - 1, StartColumn + 1).GetSymbol()
+                    ############################################################
+                    if any(cell.used_in_pattern for cell in cells if cell.GetSymbol != "@"): 
+                        return 0
+                    ############################################################
                     for P in self.__AllowedPatterns:
                         CurrentSymbol = self.__GetCell(Row, Column).GetSymbol()
                         if P.MatchesPattern(PatternString, CurrentSymbol):
-                            for C in PatternList:
-                                if (C.GetSymbol() != "@" and not C.CheckSymbolAllowed(CurrentSymbol)):
-                                    print("You cannot overlap patterns of the same symbol to re-use cells")
-                                    return 0
                             self.__GetCell(StartRow, StartColumn).AddToNotAllowedSymbols(CurrentSymbol)
                             self.__GetCell(StartRow, StartColumn + 1).AddToNotAllowedSymbols(CurrentSymbol)
                             self.__GetCell(StartRow, StartColumn + 2).AddToNotAllowedSymbols(CurrentSymbol)
@@ -156,8 +160,9 @@ class Puzzle():
                             self.__GetCell(StartRow - 2, StartColumn).AddToNotAllowedSymbols(CurrentSymbol)
                             self.__GetCell(StartRow - 1, StartColumn).AddToNotAllowedSymbols(CurrentSymbol)
                             self.__GetCell(StartRow - 1, StartColumn + 1).AddToNotAllowedSymbols(CurrentSymbol)
+                            for cell in cells:   ##############################
+                                cell.used_in_pattern = True #############################
                             return 10
-                        # Edit Ends
                 except:
                     pass
         return 0
@@ -213,6 +218,7 @@ class Cell():
     def __init__(self):
         self._Symbol = ""
         self.__SymbolsNotAllowed = []
+        self.used_in_pattern = False ######################################
 
     def GetSymbol(self):
         if self.IsEmpty():
