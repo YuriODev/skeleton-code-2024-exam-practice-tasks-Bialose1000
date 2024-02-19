@@ -107,6 +107,8 @@ class Puzzle():
                 AmountToAddToScore = self.CheckforMatchWithPattern(Row, Column)
                 if AmountToAddToScore > 0:
                     self.__Score += AmountToAddToScore
+                    for pattern in self.__AllowedPatterns:
+                        pattern.OutputPatternCount()
             if self.__SymbolsLeft == 0:
                 Finished = True
         print()
@@ -206,6 +208,9 @@ class Pattern():
 
     def GetPatternSequence(self):
       return self.__PatternSequence
+    
+    def OutputPatternCount(self):
+        print(f"Number of {self.__Symbol} patterns is {self.PatternCount}")
     #####################################################################
 
 class Cell():

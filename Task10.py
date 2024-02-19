@@ -80,32 +80,52 @@ class Puzzle():
         while not Finished:
             self.DisplayPuzzle()
             print("Current score: " + str(self.__Score))
+            print(f"Symbols left: {self.__SymbolsLeft}")
             Row = -1
             Valid = False
             while not Valid:
                 try:
                     Row = int(input("Enter row number: "))
-                    Valid = True
-                except:
-                    pass
+                    if Row < 0 or Row > self.__GridSize:
+                        print("Please try again. Make sure your row value is inside the grid. ")
+                    else:
+                        Valid = True
+                except ValueError:
+                    print("Please only use numerical values. ")
             Column = -1
             Valid = False
             while not Valid:
                 try:
                     Column = int(input("Enter column number: "))
-                    Valid = True
-                except:
-                    pass
+                    if Column < 0 or Column > self.__GridSize:
+                        print("Please try again. Make sure your row value is inside the grid. ")
+                    else:
+                        Valid = True
+                except ValueError:
+                    print("Please only use numerical values. ")
             Symbol = self.__GetSymbolFromUser()
-            self.__SymbolsLeft -= 1
             CurrentCell = self.__GetCell(Row, Column)
-            if CurrentCell.CheckSymbolAllowed(Symbol):
-                CurrentCell.ChangeSymbolInCell(Symbol)
-                AmountToAddToScore = self.CheckforMatchWithPattern(Row, Column)
-                if AmountToAddToScore > 0:
-                    self.__Score += AmountToAddToScore
+            if CurrentCell.IsPartOfPattern():
+                print("Error: Cannot place a symbol in a cell that is part of a matched pattern. Please try again.")
+                continue
+            if not CurrentCell.IsEmpty():
+                print("Error: The cell is already occupied. Please choose another cell.")
+                continue
+            
+            if not CurrentCell.CheckSymbolAllowed(Symbol):
+                print("Error: This symbol cannot be placed here. Please try again.")
+                continue
+
+            CurrentCell.ChangeSymbolInCell(Symbol)
+            self.__SymbolsLeft -= 1
+            AmountToAddToScore = self.CheckforMatchWithPattern(Row, Column)
+            if AmountToAddToScore > 0:
+                self.__Score += AmountToAddToScore
+                # Optionally set part of the pattern for involved cells here
+
             if self.__SymbolsLeft == 0:
                 Finished = True
+
         print()
         self.DisplayPuzzle()
         print()
@@ -200,6 +220,7 @@ class Cell():
     def __init__(self):
         self._Symbol = ""
         self.__SymbolsNotAllowed = []
+        self.__isPartOfPattern = False ##############
 
     def GetSymbol(self):
         if self.IsEmpty():
@@ -227,6 +248,12 @@ class Cell():
 
     def UpdateCell(self):
         pass
+
+    def IsPartOfPattern(self):
+        return self.__isPartOfPattern
+
+    def SetPartOfPattern(self, partOfPattern):
+        self.__isPartOfPattern = partOfPattern
 
 class BlockedCell(Cell):
     def __init__(self):

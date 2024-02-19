@@ -120,15 +120,15 @@ class Puzzle():
 ##########################################################    
     def savePuzzle(self, filename):
         with open(filename, "w") as f:
-            f.write(str(len(self.__AllowedSymbols)) + "\n") 
+            f.write(str(len(self.__AllowedSymbols)) + "\n")  # Number of Allowed Symbols
             for symbol in self.__AllowedSymbols:
-                f.write(str(symbol) + "\n")
+                f.write(str(symbol) + "\n")  # Each Symbol
             
-            f.write(str(len(self.__AllowedPatterns)) + "\n")
+            f.write(str(len(self.__AllowedPatterns)) + "\n")  # Number of Allowed Patterns
             for pattern in self.__AllowedPatterns:
-                f.write(str(pattern.GetSymbol()) + "," + str(pattern.GetPatternSequence()) + "\n")
+                f.write(str(pattern.GetSymbol()) + "," + str(pattern.GetPatternSequence()) + "\n")   # Each Pattern
 
-            f.write(str(self.__GridSize) + "\n")
+            f.write(str(self.__GridSize) + "\n")  # Grid Size added
 
             for cell in self.__Grid:
                 if isinstance(cell, BlockedCell):
@@ -139,8 +139,8 @@ class Puzzle():
                     f.write("," + symbol)
                 f.write("\n")
                 
-            f.write(str(self.__Score) + "\n")
-            f.write(str(self.__SymbolsLeft) + "\n")
+            f.write(str(self.__Score) + "\n")  # Current Score
+            f.write(str(self.__SymbolsLeft) + "\n") # Number of Symbols left
 #######################################################################
 
     def __GetCell(self, Row, Column):
