@@ -46,26 +46,6 @@ class Puzzle():
             TPattern = Pattern("T", "TTT**T**T")
             self.__AllowedPatterns.append(TPattern)
             self.__AllowedSymbols.append("T")
-            self.previousMoves = [] ##############################################################
-
-##################################################################################################
-    def UndoPreviousSymbol(self):
-        if not self.previousMoves:
-            print("No moves to Undo")
-            return
-        
-        lastMove = self.previousMoves.pop()
-        row, column = lastMove.get_location()
-        symbol, notAllowedSymbols = lastMove.GetSymbol(), lastMove.get_not_allowed_symbols()
-
-        # Find the corresponding cell and revert its state
-        cell = self.__GetCell(row, column)
-        cell.ChangeSymbolInCell("-") 
-        cell.__SymbolsNotAllowed = notAllowedSymbols  # Revert the list of not allowed symbols
-
-        # Note: Adjusting the score is not required as per your instructions
-        print(f"Previous move at row {row}, column {column} undone.")
-##################################################################################################
 
     def __LoadPuzzle(self, Filename):
         try:
@@ -100,11 +80,6 @@ class Puzzle():
         while not Finished:
             self.DisplayPuzzle()
             print("Current score: " + str(self.__Score))
-            undocur = False
-            while not undocur:
-                undocur = input("Would you like to undo your last move").lower()
-                if undocur == "yes":
-                    self.UndoPreviousSymbol()
             Row = -1
             Valid = False
             while not Valid:
@@ -129,6 +104,11 @@ class Puzzle():
                 AmountToAddToScore = self.CheckforMatchWithPattern(Row, Column)
                 if AmountToAddToScore > 0:
                     self.__Score += AmountToAddToScore
+                    ##############################################################################
+                    shuffle = input("Would you like to shuffle the blocked cells? ").lower()
+                    if shuffle == "yes":
+                        self.ReShuffleBlockedCells()
+                    ##############################################################################
             if self.__SymbolsLeft == 0:
                 Finished = True
         print()
@@ -142,7 +122,27 @@ class Puzzle():
             return self.__Grid[Index]
         else:
             raise IndexError()
+    ###################################################################################################
+    def ReShuffleBlockedCells(self):
+        EmptyCellsLocation = [i for i, cell in enumerate(self.__Grid) if isinstance(cell, Cell) and not isinstance(cell, BlockedCell)]
+        BlockedCellsLocation = [i for i, cell in enumerate(self.__Grid) if isinstance(cell, BlockedCell)]
 
+        if len(EmptyCellsLocation) < len(BlockedCellsLocation):
+            print("The cells can't be shuffled at this time.")
+            return
+        
+        for i in BlockedCellsLocation:
+            self.__Grid[i] = Cell()
+
+        random.shuffle(EmptyCellsLocation)
+        
+        for i in range(len(BlockedCellsLocation)):
+            newposition = EmptyCellsLocation[i]
+            self.__Grid[newposition] = BlockedCell()
+
+        print("Blocked Cells have been reshuffled")
+                    
+    ###################################################################################################
     def CheckforMatchWithPattern(self, Row, Column):
         for StartRow in range(Row + 2, Row - 1, -1):
             for StartColumn in range(Column - 2, Column + 1):
@@ -260,30 +260,6 @@ class BlockedCell(Cell):
 
     def CheckSymbolAllowed(self, SymbolToCheck):
         return False
-
-#####################################################################################
-class PreviousMove(Cell):
-    def __init__(self, row=None, column=None, symbol=None, notAllowedSymbols=None):
-        super().__init__()
-        self.row = row
-        self.column = column
-        self._Symbol = symbol if symbol else ""
-        self.notAllowedSymbols = notAllowedSymbols if symbol else []
-
-    def setLocation(self, row, column):
-        self.row = row
-        self.column = column
-
-    def getLocation(self):
-        return self.row, self.column
-    
-    def add_to_not_allowed_symbols(self, symbol):
-        if symbol not in self.__SymbolsNotAllowed:
-            self.__SymbolsNotAllowed.append(symbol)
-    
-    def get_not_allowed_symbols(self):
-        return self.__SymbolsNotAllowed
-#####################################################################################
 
 if __name__ == "__main__":
     Main()

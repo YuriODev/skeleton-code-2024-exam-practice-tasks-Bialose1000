@@ -35,6 +35,15 @@ class Puzzle():
                 else:
                     C = BlockedCell()
                 self.__Grid.append(C)
+            #################################################################################################
+            if len(args) == 2:
+                empty_cell_indices = [i for i, cell in enumerate(self.__Grid) if isinstance(cell, Cell) and not isinstance(cell, BlockedCell) and not isinstance(cell, DoublePointCell)]
+                random.shuffle(empty_cell_indices)
+                double_point_indices = empty_cell_indices[:5] 
+                
+            for index in double_point_indices:
+                self.__Grid[index] = DoublePointCell()
+            #################################################################################################
             self.__AllowedPatterns = []
             self.__AllowedSymbols = []
             QPattern = Pattern("Q", "QQ**Q**QQ")
@@ -46,26 +55,6 @@ class Puzzle():
             TPattern = Pattern("T", "TTT**T**T")
             self.__AllowedPatterns.append(TPattern)
             self.__AllowedSymbols.append("T")
-            self.previousMoves = [] ##############################################################
-
-##################################################################################################
-    def UndoPreviousSymbol(self):
-        if not self.previousMoves:
-            print("No moves to Undo")
-            return
-        
-        lastMove = self.previousMoves.pop()
-        row, column = lastMove.get_location()
-        symbol, notAllowedSymbols = lastMove.GetSymbol(), lastMove.get_not_allowed_symbols()
-
-        # Find the corresponding cell and revert its state
-        cell = self.__GetCell(row, column)
-        cell.ChangeSymbolInCell("-") 
-        cell.__SymbolsNotAllowed = notAllowedSymbols  # Revert the list of not allowed symbols
-
-        # Note: Adjusting the score is not required as per your instructions
-        print(f"Previous move at row {row}, column {column} undone.")
-##################################################################################################
 
     def __LoadPuzzle(self, Filename):
         try:
@@ -100,11 +89,6 @@ class Puzzle():
         while not Finished:
             self.DisplayPuzzle()
             print("Current score: " + str(self.__Score))
-            undocur = False
-            while not undocur:
-                undocur = input("Would you like to undo your last move").lower()
-                if undocur == "yes":
-                    self.UndoPreviousSymbol()
             Row = -1
             Valid = False
             while not Valid:
@@ -157,6 +141,21 @@ class Puzzle():
                     PatternString += self.__GetCell(StartRow - 2, StartColumn).GetSymbol()
                     PatternString += self.__GetCell(StartRow - 1, StartColumn).GetSymbol()
                     PatternString += self.__GetCell(StartRow - 1, StartColumn + 1).GetSymbol()
+                    ########################################################################################
+                    double_point_encountered = False
+                    for r in range(StartRow - 2, StartRow + 1):
+                        for c in range(StartColumn, StartColumn + 3):
+                            if self.__GetCell(r, c).IsDouble():
+                                double_point_encountered = True
+                                break
+                        if double_point_encountered:
+                            break
+
+                    if double_point_encountered:
+                        points = 20
+                    else:
+                        points = 10
+                    #########################################################################################
                     for P in self.__AllowedPatterns:
                         CurrentSymbol = self.__GetCell(Row, Column).GetSymbol()
                         if P.MatchesPattern(PatternString, CurrentSymbol):
@@ -169,7 +168,7 @@ class Puzzle():
                             self.__GetCell(StartRow - 2, StartColumn).AddToNotAllowedSymbols(CurrentSymbol)
                             self.__GetCell(StartRow - 1, StartColumn).AddToNotAllowedSymbols(CurrentSymbol)
                             self.__GetCell(StartRow - 1, StartColumn + 1).AddToNotAllowedSymbols(CurrentSymbol)
-                            return 10
+                            return points ###################################################################
                 except:
                     pass
         return 0
@@ -253,6 +252,17 @@ class Cell():
     def UpdateCell(self):
         pass
 
+    def IsDouble(self):  #########################################
+        return False
+####################################
+class DoublePointCell(Cell):
+    def __init__(self):
+        super().__init__()
+        self._Symbol = "D"
+
+    def IsDouble(self):
+        return True
+####################################
 class BlockedCell(Cell):
     def __init__(self):
         super(BlockedCell, self).__init__()
@@ -260,30 +270,6 @@ class BlockedCell(Cell):
 
     def CheckSymbolAllowed(self, SymbolToCheck):
         return False
-
-#####################################################################################
-class PreviousMove(Cell):
-    def __init__(self, row=None, column=None, symbol=None, notAllowedSymbols=None):
-        super().__init__()
-        self.row = row
-        self.column = column
-        self._Symbol = symbol if symbol else ""
-        self.notAllowedSymbols = notAllowedSymbols if symbol else []
-
-    def setLocation(self, row, column):
-        self.row = row
-        self.column = column
-
-    def getLocation(self):
-        return self.row, self.column
-    
-    def add_to_not_allowed_symbols(self, symbol):
-        if symbol not in self.__SymbolsNotAllowed:
-            self.__SymbolsNotAllowed.append(symbol)
-    
-    def get_not_allowed_symbols(self):
-        return self.__SymbolsNotAllowed
-#####################################################################################
 
 if __name__ == "__main__":
     Main()
